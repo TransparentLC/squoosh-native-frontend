@@ -397,6 +397,7 @@ export default class Intro extends Component<Props, State> {
                   <a
                     class={style.footerLinkWithLogo}
                     href="https://github.com/TransparentLC/squoosh-native"
+                    target="_blank"
                   >
                     <img src={githubLogo} alt="" width="10" height="10" />
                     Source on Github
