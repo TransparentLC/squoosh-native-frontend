@@ -1,7 +1,7 @@
 // Based on https://www.npmjs.com/package/pretty-bytes
 // Modified so the units are returned separately.
 
-const UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+const UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
 interface PrettyBytesResult {
   value: string;
@@ -15,13 +15,14 @@ export default function prettyBytes(number: number): PrettyBytesResult {
   if (isNegative) number = -number;
   if (number < 1) return { value: prefix + number, unit: UNITS[0] };
 
-  const exponent = Math.min(
-    Math.floor(Math.log10(number) / 3),
-    UNITS.length - 1,
-  );
+  let exponent = 0;
+  while (number > 1024) {
+    number /= 1024;
+    exponent++;
+  }
 
   return {
     unit: UNITS[exponent],
-    value: prefix + (number / Math.pow(1000, exponent)).toPrecision(3),
+    value: prefix + number.toPrecision(3),
   };
 }

@@ -20,3 +20,43 @@ interface Navigator {
 declare module 'add-css:*' {}
 
 declare module 'preact/debug' {}
+
+declare const pywebview: {
+  api: {
+    hookDnD: () => Promise<void>,
+    fileDialog: (kwargs: {
+      dialog_type?: 10 | 20 | 30, // OPEN_DIALOG | FOLDER_DIALOG | SAVE_DIALOG
+      allow_multiple?: boolean,
+      directory?: string,
+      save_filename?: string,
+      file_types?: string[], // "Description (*.ext1;*.ext2...)" or "All files (*.*)"
+    }) => Promise<string[] | string | null>,
+    readFile: (file: string, size?: number) => Promise<Uint8Array>,
+    writeFile: (file: string, data: Uint8Array) => Promise<Uint8Array>,
+    checkCodec: () => Promise<Record<string, string | null>>,
+    compressImage: (image: ImageData, encoderState: import('src/client/lazy-app/feature-meta/index').EncoderState) => Promise<Uint8Array>,
+  },
+  dnd: {
+    callbacks: Set<(e: DragEvent) => void>,
+  },
+};
+
+interface Window {
+  pywebview: typeof pywebview,
+  msgpack: {
+    encode: typeof import('@msgpack/msgpack').encode,
+    decode: typeof import('@msgpack/msgpack').decode,
+  },
+  showSnack: (message: string, options?: {timeout?: number, actions?: string[]}) => Promise<string>,
+  codecInfo: {
+    avif?: string,
+    jxl?: string,
+    MozJPEG?: string,
+    oxiPNG?: string,
+    webP?: string,
+  }
+}
+
+interface File {
+  pywebviewFullPath?: string,
+}

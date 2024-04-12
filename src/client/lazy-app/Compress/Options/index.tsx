@@ -50,9 +50,10 @@ const supportedEncoderMapP: Promise<PartialButNotUndefined<typeof encoderMap>> =
     };
 
     // Filter out entries where the feature test fails
+    // Remove browser JPEG/PNG encoders because mozjpeg/oxipng is generally better
     await Promise.all(
       Object.entries(encoderMap).map(async ([encoderName, details]) => {
-        if ('featureTest' in details && !(await details.featureTest())) {
+        if (['browserJPEG', 'browserPNG'].includes(encoderName) || ('featureTest' in details && !(await details.featureTest()))) {
           delete supportedEncoderMap[encoderName as keyof typeof encoderMap];
         }
       }),

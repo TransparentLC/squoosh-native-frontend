@@ -7,6 +7,11 @@
   grid-template-rows: 1fr max-content max-content;
   font-size: 1.2rem;
   color: var(--dim-text);
+  pointer-events: none;
+}
+
+.intro::-webkit-scrollbar {
+  display: none;
 }
 
 .blob-canvas {
@@ -21,6 +26,7 @@
 
 .main {
   min-height: 541px;
+  height: 100vh;
   display: grid;
   grid-template-rows: max-content max-content;
   justify-items: center;
@@ -33,8 +39,14 @@
   }
 }
 
+.main-container {
+  margin-top: calc(50vh - 32px);
+  transform: translateY(-50%);
+}
+
 .logo-container {
-  margin: 5rem 0 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .logo {
@@ -101,6 +113,8 @@
   position: relative;
   background: var(--deep-blue);
   padding-bottom: 5.2vw;
+  margin-top: 100vh;
+  pointer-events: all;
 }
 
 .top-wave {
@@ -222,7 +236,7 @@
 
 .footer {
   background: var(--white);
-  padding-top: 5em;
+  pointer-events: all;
 }
 
 .footer-container {

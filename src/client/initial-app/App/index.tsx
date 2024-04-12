@@ -1,4 +1,3 @@
-import type { FileDropEvent } from 'file-drop-element';
 import type SnackBarElement from 'shared/custom-els/snack-bar';
 import type { SnackOptions } from 'shared/custom-els/snack-bar';
 
@@ -7,7 +6,6 @@ import { h, Component } from 'preact';
 import { linkRef } from 'shared/prerendered-app/util';
 import * as style from './style.css';
 import 'add-css:./style.css';
-import 'file-drop-element';
 import 'shared/custom-els/snack-bar';
 import Intro from 'shared/prerendered-app/Intro';
 import 'shared/custom-els/loading-spinner';
@@ -72,13 +70,28 @@ export default class App extends Component<Props, State> {
     });
 
     window.addEventListener('popstate', this.onPopState);
+    window.showSnack = this.showSnack;
+    pywebview.dnd.callbacks.add(this.onFileDrop);
   }
 
-  private onFileDrop = ({ files }: FileDropEvent) => {
+  private onFileDrop = async (e: DragEvent) => {
+    const files = e.dataTransfer?.files;
     if (!files || files.length === 0) return;
     const file = files[0];
+    console.log('onFileDrop', file);
     this.openEditor();
-    this.setState({ file });
+    if (file.pywebviewFullPath) {
+      const fileArray = await pywebview.api.readFile(file.pywebviewFullPath);
+      const fileData = fileArray.buffer.slice(fileArray.byteOffset, fileArray.byteOffset + fileArray.byteLength);
+      this.setState({
+        file: new File([fileData], file.name, {
+          type: file.type,
+          lastModified: file.lastModified,
+        })
+      });
+    } else {
+      this.setState({ file });
+    }
   };
 
   private onIntroPickFile = (file: File) => {
@@ -115,18 +128,16 @@ export default class App extends Component<Props, State> {
 
     return (
       <div class={style.app}>
-        <file-drop onfiledrop={this.onFileDrop} class={style.drop}>
-          {showSpinner ? (
-            <loading-spinner class={style.appLoader} />
-          ) : isEditorOpen ? (
-            Compress && (
-              <Compress file={file!} showSnack={this.showSnack} onBack={back} />
-            )
-          ) : (
-            <Intro onFile={this.onIntroPickFile} showSnack={this.showSnack} />
-          )}
-          <snack-bar ref={linkRef(this, 'snackbar')} />
-        </file-drop>
+        {showSpinner ? (
+          <loading-spinner class={style.appLoader} />
+        ) : isEditorOpen ? (
+          Compress && (
+            <Compress file={file!} showSnack={this.showSnack} onBack={back} />
+          )
+        ) : (
+          <Intro onFile={this.onIntroPickFile} showSnack={this.showSnack} />
+        )}
+        <snack-bar ref={linkRef(this, 'snackbar')} />
       </div>
     );
   }

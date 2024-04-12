@@ -93,7 +93,11 @@ async function decodeImage(
   blob: Blob,
   workerBridge: WorkerBridge,
 ): Promise<ImageData> {
+  console.log('decodeImage', blob);
   assertSignal(signal);
+  // if ((blob as File).pywebviewFullPath) {
+  //   blob = new Blob([await pywebview.api.readFile((blob as File).pywebviewFullPath!)]);
+  // }
   const mimeType = await abortable(signal, sniffMimeType(blob));
   const canDecode = await abortable(signal, canDecodeImageType(mimeType));
 
@@ -173,17 +177,33 @@ async function compressImage(
   sourceFilename: string,
   workerBridge: WorkerBridge,
 ): Promise<File> {
+  console.log('compressImage', image, encodeData);
   assertSignal(signal);
 
+  let compressedData: ArrayBuffer | Blob;
   const encoder = encoderMap[encodeData.type];
-  const compressedData = await encoder.encode(
-    signal,
-    workerBridge,
-    image,
-    // The type of encodeData.options is enforced via the previous line
-    encodeData.options as any,
-  );
-
+  if ((window.codecInfo as Record<string, string>)[encodeData.type]) {
+    console.log('Using native encoder for', encodeData.type);
+    console.time('pywebview compress ' + encodeData.type);
+    const compressedDataArray = (await pywebview.api.compressImage(
+      ({data: image.data, width: image.width, height: image.height}) as ImageData,
+      encodeData,
+    ));
+    compressedData = compressedDataArray.buffer.slice(
+      compressedDataArray.byteOffset,
+      compressedDataArray.byteOffset + compressedDataArray.byteLength
+    );
+    console.timeEnd('pywebview compress ' + encodeData.type);
+  } else {
+    console.log('Using WASM encoder for', encodeData.type);
+    compressedData = await encoder.encode(
+      signal,
+      workerBridge,
+      image,
+      // The type of encodeData.options is enforced via the previous line
+      encodeData.options as any,
+    );
+  }
   // This type ensures the image mimetype is consistent with our mimetype sniffer
   const type: ImageMimeTypes = encoder.meta.mimeType;
 
@@ -599,6 +619,8 @@ export default class Compress extends Component<Props, State> {
    * decides which steps can be skipped, and which can be cached.
    */
   private async updateImage() {
+    console.log('updateImage', this.sourceFile);
+
     const currentState = this.state;
 
     // State of the last completed job, or ongoing job

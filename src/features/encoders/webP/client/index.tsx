@@ -138,12 +138,10 @@ export class Options extends Component<Props, State> {
         form.filter_strength,
         options.filter_strength,
       ),
-      filter_sharpness:
-        7 -
-        inputFieldValueAsNumber(
-          form.filter_sharpness,
-          7 - options.filter_sharpness,
-        ),
+      filter_sharpness: inputFieldValueAsNumber(
+        form.filter_sharpness,
+        options.filter_sharpness,
+      ),
       pass: inputFieldValueAsNumber(form.pass, options.pass),
       preprocessing: inputFieldValueAsNumber(
         form.preprocessing,
@@ -301,7 +299,7 @@ export class Options extends Component<Props, State> {
                   name="filter_sharpness"
                   min="0"
                   max="7"
-                  value={7 - options.filter_sharpness}
+                  value={options.filter_sharpness}
                   onInput={this.onChange}
                 >
                   Filter sharpness:

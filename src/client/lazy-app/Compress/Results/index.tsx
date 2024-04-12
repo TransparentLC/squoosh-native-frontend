@@ -44,19 +44,18 @@ export default class Results extends Component<Props, State> {
     }
   }
 
-  private onDownload = () => {
-    // GA can’t do floats. So we round to ints. We're deliberately rounding to nearest kilobyte to
-    // avoid cases where exact image sizes leak something interesting about the user.
-    const before = Math.round(this.props.source!.file.size / 1024);
-    const after = Math.round(this.props.imageFile!.size / 1024);
-    const change = Math.round((after / before) * 1000);
-
-    ga('send', 'event', 'compression', 'download', {
-      metric1: before,
-      metric2: after,
-      metric3: change,
+  private writeImageFile = async () => {
+    if (this.state.showLoadingState) return;
+    const path = await pywebview.api.fileDialog({
+      dialog_type: 30,
+      allow_multiple: false,
+      save_filename: this.props.imageFile ? this.props.imageFile.name : '',
+      file_types: this.props.imageFile ? [`Image file (*.${(this.props.imageFile.name.match(/(?:\.([^.]+))?$/) || ['', '*'])[1]})`] : undefined,
     });
-  };
+    if (path === null || (Array.isArray(path) && !path.length)) return;
+    const buffer = await fetch(this.props.downloadUrl!).then(r => r.arrayBuffer());
+    await pywebview.api.writeFile(Array.isArray(path) ? path[0] : path, new Uint8Array(buffer));
+  }
 
   render(
     { source, imageFile, downloadUrl, flipSide, typeLabel }: Props,
@@ -84,7 +83,7 @@ export default class Results extends Component<Props, State> {
         <div class={style.expandArrow}>
           <Arrow />
         </div>
-        <div class={style.bubble}>
+        <div class={style.bubble} title={imageFile ? `Size: ${imageFile.size} Bytes` : ''}>
           <div class={style.bubbleInner}>
             <div class={style.sizeInfo}>
               <div class={style.fileSize}>
@@ -119,12 +118,10 @@ export default class Results extends Component<Props, State> {
             </div>
           </div>
         </div>
-        <a
+        <span
           class={showLoadingState ? style.downloadDisable : style.download}
-          href={downloadUrl}
-          download={imageFile ? imageFile.name : ''}
+          onClick={this.writeImageFile}
           title="Download"
-          onClick={this.onDownload}
         >
           <svg class={style.downloadBlobs} viewBox="0 0 89.6 86.9">
             <title>Download</title>
@@ -135,7 +132,7 @@ export default class Results extends Component<Props, State> {
             <DownloadIcon />
           </div>
           {showLoadingState && <loading-spinner />}
-        </a>
+        </span>
       </div>
     );
   }
