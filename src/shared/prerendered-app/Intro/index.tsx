@@ -52,18 +52,6 @@ const blobAnimImport =
   !__PRERENDER__ && matchMedia('(prefers-reduced-motion: reduce)').matches
     ? undefined
     : import('./blob-anim');
-const installButtonSource = 'introInstallButton-Purple';
-const supportsClipboardAPI =
-  !__PRERENDER__ && navigator.clipboard && navigator.clipboard.read;
-
-async function getImageClipboardItem(
-  items: ClipboardItem[],
-): Promise<undefined | Blob> {
-  for (const item of items) {
-    const type = item.types.find((type) => type.startsWith('image/'));
-    if (type) return item.getType(type);
-  }
-}
 
 interface Props {
   onFile?: (file: File) => void;
@@ -110,6 +98,7 @@ export default class Intro extends Component<Props, State> {
     // @ts-ignore
     pywebview.api.checkCodec().then(codecInfo => this.setState({codecInfo}));
     this.introElement = document.getElementById('intro')!;
+    document.addEventListener('paste', this.onPaste);
   }
 
   componentWillUnmount() {
@@ -118,6 +107,7 @@ export default class Intro extends Component<Props, State> {
       this.onBeforeInstallPromptEvent,
     );
     window.removeEventListener('appinstalled', this.onAppInstalled);
+    document.removeEventListener('paste', this.onPaste);
   }
 
   private onFileChange = (event: Event): void => {
@@ -184,24 +174,13 @@ export default class Intro extends Component<Props, State> {
     this.installingViaButton = false;
   };
 
-  private onPasteClick = async () => {
-    let clipboardItems: ClipboardItem[];
-
-    try {
-      clipboardItems = await navigator.clipboard.read();
-    } catch (err) {
-      this.props.showSnack!(`No permission to access clipboard`);
-      return;
-    }
-
-    const blob = await getImageClipboardItem(clipboardItems);
-
-    if (!blob) {
+  private onPaste = (e: ClipboardEvent) => {
+    const file = Array.from(e.clipboardData?.files || []).find(e => e.type.startsWith('image/'));
+    if (file) {
+      this.props.onFile!(file);
+    } else {
       this.props.showSnack!(`No image found in the clipboard`);
-      return;
     }
-
-    this.props.onFile!(new File([blob], 'image.unknown'));
   };
 
   private introScrollFrom: number = 0;
@@ -301,14 +280,7 @@ export default class Intro extends Component<Props, State> {
                   </svg>
                 </button>
                 <div>
-                  <span class={style.dropText}>Drop </span>OR{' '}
-                  {supportsClipboardAPI ? (
-                    <button class={style.pasteBtn} onClick={this.onPasteClick}>
-                      Paste
-                    </button>
-                  ) : (
-                    'Paste'
-                  )}
+                  <span class={style.dropText}>Drop OR Paste</span>
                 </div>
               </div>
             </div>
