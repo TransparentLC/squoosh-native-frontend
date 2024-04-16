@@ -23,6 +23,7 @@ async function main() {
   await (Object.keys(pywebview.api).length || new Promise(resolve => addEventListener('pywebviewapiready', resolve)));
   await pywebview.api.hookDnD();
   pywebview.api.checkCodec().then(r => console.log('Native codec info:', window.codecInfo = r));
+  pywebview.api.checkMetric().then(r => console.log('Native metric info:', window.metricInfo = r));
   render(<App />, root);
 }
 

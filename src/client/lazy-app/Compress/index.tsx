@@ -55,6 +55,7 @@ interface Side {
   latestSettings: SideSettings;
   encodedSettings?: SideSettings;
   loading: boolean;
+  metrics: {[K in typeof metrics[number]]?: number;},
 }
 
 interface Props {
@@ -95,9 +96,7 @@ async function decodeImage(
 ): Promise<ImageData> {
   console.log('decodeImage', blob);
   assertSignal(signal);
-  // if ((blob as File).pywebviewFullPath) {
-  //   blob = new Blob([await pywebview.api.readFile((blob as File).pywebviewFullPath!)]);
-  // }
+
   const mimeType = await abortable(signal, sniffMimeType(blob));
   const canDecode = await abortable(signal, canDecodeImageType(mimeType));
 
@@ -833,6 +832,12 @@ export default class Compress extends Component<Props, State> {
         if (!jobState.encoderState) {
           file = source.file;
           data = source.preprocessed;
+          this.setState(currentState => ({
+            sides: cleanSet(currentState.sides, sideIndex, {
+              ...currentState.sides[sideIndex],
+              metrics: null,
+            })
+          }));
         } else {
           const cacheResult = this.encodeCache.match(
             source.preprocessed,
@@ -840,6 +845,12 @@ export default class Compress extends Component<Props, State> {
             jobState.encoderState,
           );
 
+          this.setState(currentState => ({
+            sides: cleanSet(currentState.sides, sideIndex, {
+              ...currentState.sides[sideIndex],
+              metrics: undefined,
+            })
+          }));
           if (cacheResult) {
             ({ file, processed, data } = cacheResult);
           } else {
@@ -925,6 +936,19 @@ export default class Compress extends Component<Props, State> {
           return { sides };
         });
 
+        if (jobState.encoderState) {
+          console.log('metrics', sideIndex, processed, data);
+          pywebview.api.calculateMetrics(
+            ({data: processed!.data, width: processed!.width, height: processed!.height}) as ImageData,
+            ({data: data.data, width: data.width, height: data.height}) as ImageData,
+          ).then(metrics => this.setState(currentState => ({
+            sides: cleanSet(currentState.sides, sideIndex, {
+              ...currentState.sides[sideIndex],
+              metrics,
+            })
+          })));
+        }
+
         this.activeSideJobs[sideIndex] = undefined;
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
@@ -969,6 +993,7 @@ export default class Compress extends Component<Props, State> {
         imageFile={side.file}
         source={source}
         loading={loading || side.loading}
+        metrics={side.metrics}
         flipSide={mobileView || index === 1}
         typeLabel={
           side.latestSettings.encoderState

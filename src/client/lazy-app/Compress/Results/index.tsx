@@ -12,6 +12,7 @@ interface Props {
   source?: SourceImage;
   imageFile?: File;
   downloadUrl?: string;
+  metrics?: {[K in typeof metrics[number]]?: number;};
   flipSide: boolean;
   typeLabel: string;
 }
@@ -21,6 +22,12 @@ interface State {
 }
 
 const loadingReactionDelay = 500;
+
+const metricNamesMapping: {[K in typeof metrics[number]]: string;} = {
+  dssim: 'DSSIM',
+  butteraugli: 'Butteraugli',
+  ssimulacra2: 'SSIMULACRA2',
+};
 
 export default class Results extends Component<Props, State> {
   state: State = {
@@ -58,7 +65,7 @@ export default class Results extends Component<Props, State> {
   }
 
   render(
-    { source, imageFile, downloadUrl, flipSide, typeLabel }: Props,
+    { source, imageFile, downloadUrl, metrics, flipSide, typeLabel }: Props,
     { showLoadingState }: State,
   ) {
     const prettySize = imageFile && prettyBytes(imageFile.size);
@@ -72,6 +79,18 @@ export default class Results extends Component<Props, State> {
       percent = diff > 1 ? absolutePercent - 100 : 100 - absolutePercent;
     }
 
+    const hoverTitleLines: string[] = [];
+    if (imageFile) {
+      hoverTitleLines.push(`Size: ${imageFile.size} Bytes`);
+      if (metrics === null) {
+        // Source image, no metrics
+      } else if (metrics === undefined) {
+        hoverTitleLines.push('(Calculating quality metrics)');
+      } else {
+        Object.entries(metrics).forEach(([k, v]) => v && hoverTitleLines.push(`${metricNamesMapping[k as keyof typeof metrics]}: ${v.toPrecision(6)}`));
+      }
+    }
+
     return (
       <div
         class={
@@ -83,7 +102,7 @@ export default class Results extends Component<Props, State> {
         <div class={style.expandArrow}>
           <Arrow />
         </div>
-        <div class={style.bubble} title={imageFile ? `Size: ${imageFile.size} Bytes` : ''}>
+        <div class={style.bubble} title={hoverTitleLines.join('\n')}>
           <div class={style.bubbleInner}>
             <div class={style.sizeInfo}>
               <div class={style.fileSize}>

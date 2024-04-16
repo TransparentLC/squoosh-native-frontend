@@ -62,12 +62,14 @@ interface State {
   beforeInstallEvent?: BeforeInstallPromptEvent;
   showBlobSVG: boolean;
   codecInfo: Record<string, string | null>;
+  metricInfo: Record<string, string | null>;
 }
 
 export default class Intro extends Component<Props, State> {
   state: State = {
     showBlobSVG: true,
     codecInfo: {},
+    metricInfo: {},
   };
   private fileInput?: HTMLInputElement;
   private blobCanvas?: HTMLCanvasElement;
@@ -96,7 +98,9 @@ export default class Intro extends Component<Props, State> {
     }
 
     // @ts-ignore
-    pywebview.api.checkCodec().then(codecInfo => this.setState({codecInfo}));
+    pywebview.api.checkCodec().then(codecInfo => this.setState({ codecInfo }));
+    // @ts-ignore
+    pywebview.api.checkMetric().then(metricInfo => this.setState({ metricInfo }));
     this.introElement = document.getElementById('intro')!;
     document.addEventListener('paste', this.onPaste);
   }
@@ -225,7 +229,7 @@ export default class Intro extends Component<Props, State> {
 
   render(
     {}: Props,
-    { fetchingDemoIndex, beforeInstallEvent, showBlobSVG, codecInfo }: State,
+    { fetchingDemoIndex, beforeInstallEvent, showBlobSVG, codecInfo, metricInfo }: State,
   ) {
     return (
       <div onWheel={this.onWheel}>
@@ -364,6 +368,14 @@ export default class Intro extends Component<Props, State> {
                       v
                       ? <abbr title={v} style="margin-left:.5em;cursor:help">{k}</abbr>
                       : <span style="margin-left:.5em;opacity:.5">{k}</span>
+                    ))}
+                  </span>
+                  <span
+                    class={style.footerLink}
+                  >
+                    <span>Available metrics:</span>
+                    {Object.entries(metricInfo).map(([k, v]) => (
+                      <span style={{marginLeft: '.5em', opacity: v ? '' : .5}}>{k}</span>
                     ))}
                   </span>
                   <a

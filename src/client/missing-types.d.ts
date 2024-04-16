@@ -21,6 +21,9 @@ declare module 'add-css:*' {}
 
 declare module 'preact/debug' {}
 
+declare const codecs: ['avif', 'jxl', 'MozJPEG', 'oxiPNG', 'webP'];
+declare const metrics: ['dssim', 'butteraugli', 'ssimulacra2'];
+
 declare const pywebview: {
   api: {
     hookDnD: () => Promise<void>,
@@ -34,7 +37,9 @@ declare const pywebview: {
     readFile: (file: string, size?: number) => Promise<Uint8Array>,
     writeFile: (file: string, data: Uint8Array) => Promise<Uint8Array>,
     checkCodec: () => Promise<Record<string, string | null>>,
+    checkMetric: () => Promise<Record<string, string | null>>,
     compressImage: (image: ImageData, encoderState: import('src/client/lazy-app/feature-meta/index').EncoderState) => Promise<Uint8Array>,
+    calculateMetrics: (original: ImageData, distorted: ImageData) => Promise<{[K in typeof metrics[number]]?: string;}>,
   },
   dnd: {
     callbacks: Set<(e: DragEvent) => void>,
@@ -49,12 +54,11 @@ interface Window {
   },
   showSnack: (message: string, options?: {timeout?: number, actions?: string[]}) => Promise<string>,
   codecInfo: {
-    avif?: string,
-    jxl?: string,
-    MozJPEG?: string,
-    oxiPNG?: string,
-    webP?: string,
-  }
+    [K in typeof codecs[number]]?: string;
+  },
+  metricInfo: {
+    [K in typeof metrics[number]]?: boolean;
+  },
 }
 
 interface File {
