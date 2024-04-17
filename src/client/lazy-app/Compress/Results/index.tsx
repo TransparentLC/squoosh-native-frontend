@@ -87,7 +87,7 @@ export default class Results extends Component<Props, State> {
       } else if (metrics === undefined) {
         hoverTitleLines.push('(Calculating quality metrics)');
       } else {
-        Object.entries(metrics).forEach(([k, v]) => v && hoverTitleLines.push(`${metricNamesMapping[k as keyof typeof metrics]}: ${v.toPrecision(6)}`));
+        Object.entries(metrics).forEach(([k, v]) => (v !== null) && hoverTitleLines.push(`${metricNamesMapping[k as keyof typeof metrics]}: ${v.toPrecision(6)}`));
       }
     }
 

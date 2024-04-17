@@ -941,12 +941,15 @@ export default class Compress extends Component<Props, State> {
           pywebview.api.calculateMetrics(
             ({data: processed!.data, width: processed!.width, height: processed!.height}) as ImageData,
             ({data: data.data, width: data.width, height: data.height}) as ImageData,
-          ).then(metrics => this.setState(currentState => ({
-            sides: cleanSet(currentState.sides, sideIndex, {
-              ...currentState.sides[sideIndex],
-              metrics,
-            })
-          })));
+          ).then(metrics => {
+            console.log(metrics);
+            this.setState(currentState => ({
+              sides: cleanSet(currentState.sides, sideIndex, {
+                ...currentState.sides[sideIndex],
+                metrics,
+              }),
+            }));
+          });
         }
 
         this.activeSideJobs[sideIndex] = undefined;
