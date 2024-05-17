@@ -21,7 +21,7 @@ declare module 'add-css:*' {}
 
 declare module 'preact/debug' {}
 
-declare const codecs: ['avif', 'jxl', 'MozJPEG', 'oxiPNG', 'webP', 'jpegli'];
+declare const codecs: ['avif', 'jxl', 'MozJPEG', 'oxiPNG', 'webP', 'jpegli', 'pngquant'];
 declare const metrics: ['dssim', 'butteraugli', 'ssimulacra2'];
 
 declare const pywebview: {
