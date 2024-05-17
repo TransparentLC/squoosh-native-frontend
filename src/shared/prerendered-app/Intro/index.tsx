@@ -1,4 +1,4 @@
-import { h, Component } from 'preact';
+import { h, Component, Fragment } from 'preact';
 
 import { linkRef } from 'shared/prerendered-app/util';
 import '../../custom-els/loading-spinner';
@@ -364,19 +364,23 @@ export default class Intro extends Component<Props, State> {
                     class={style.footerLink}
                   >
                     <span>Available native codecs:</span>
-                    {Object.entries(codecInfo).map(([k, v]) => (
-                      v
-                      ? <abbr title={v} style="margin-left:.5em;cursor:help">{k}</abbr>
-                      : <span style="margin-left:.5em;opacity:.5">{k}</span>
-                    ))}
+                    <br/>
+                    {Object.entries(codecInfo).map(([k, v]) => <Fragment>
+                        {' '}{
+                          v
+                            ? <abbr title={v} style="cursor:help">{k}</abbr>
+                            : <span style="opacity:.5">{k}</span>
+                        }
+                    </Fragment>)}
                   </span>
                   <span
                     class={style.footerLink}
                   >
                     <span>Available metrics:</span>
-                    {Object.entries(metricInfo).map(([k, v]) => (
-                      <span style={{marginLeft: '.5em', opacity: v ? '' : .5}}>{k}</span>
-                    ))}
+                    <br/>
+                    {Object.entries(metricInfo).map(([k, v]) => <Fragment>
+                        {' '}<span style={{opacity: v ? '' : .5}}>{k}</span>
+                    </Fragment>)}
                   </span>
                   <a
                     class={style.footerLinkWithLogo}
