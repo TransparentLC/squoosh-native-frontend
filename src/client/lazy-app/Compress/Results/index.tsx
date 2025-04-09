@@ -29,6 +29,23 @@ const metricNamesMapping: {[K in typeof metrics[number]]: string;} = {
   ssimulacra2: 'SSIMULACRA2',
 };
 
+const metricLevelMapping: {[K in typeof metrics[number]]?: { range: number, level: string }[];} = {
+  // dssim: [],
+  // butteraugli: [],
+  // https://github.com/cloudinary/ssimulacra2#usage
+  ssimulacra2: [
+    { range: 100, level: 'Mathematically lossless' },
+    { range: 90, level: 'Visually lossless' },
+    { range: 85, level: 'Excellent quality' },
+    { range: 80, level: 'Very high quality' },
+    { range: 70, level: 'High quality' },
+    { range: 50, level: 'Medium quality' },
+    { range: 30, level: 'Low quality' },
+    { range: 10, level: 'Very low quality' },
+    { range: -Infinity, level: 'Extremely low quality' },
+  ],
+};
+
 export default class Results extends Component<Props, State> {
   state: State = {
     showLoadingState: this.props.loading,
@@ -87,7 +104,14 @@ export default class Results extends Component<Props, State> {
       } else if (metrics === undefined) {
         hoverTitleLines.push('(Calculating quality metrics)');
       } else {
-        Object.entries(metrics).forEach(([k, v]) => (v !== null) && hoverTitleLines.push(`${metricNamesMapping[k as keyof typeof metrics]}: ${v.toPrecision(6)}`));
+        Object.entries(metrics).forEach(([k, v]) => {
+          if (v === null) return;
+          let line = `${metricNamesMapping[k as keyof typeof metrics]}: ${v.toPrecision(6)}`;
+          if (metricLevelMapping[k as keyof typeof metrics]) {
+            line += ` (${metricLevelMapping[k as keyof typeof metrics]!.find(e => e.range <= v)!.level})`;
+          }
+          hoverTitleLines.push(line);
+        });
       }
     }
 
