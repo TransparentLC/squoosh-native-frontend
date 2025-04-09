@@ -54,19 +54,21 @@ export class Options extends Component<Props, {}> {
             Quality:
           </Range>
         </div>
-        <label class={style.optionTextFirst}>
-          Subsample chroma:
-          <Select
-            name="subsample"
-            value={options.subsample}
-            onChange={this.onChange}
-          >
-            <option value="0">4:2:0</option>
-            <option value="1">4:2:2</option>
-            <option value="2">4:4:0</option>
-            <option value="3">4:4:4</option>
-          </Select>
-        </label>
+        {options.xyb ? null :
+          <label class={style.optionTextFirst}>
+            Subsample chroma:
+            <Select
+              name="subsample"
+              value={options.subsample}
+              onChange={this.onChange}
+            >
+              <option value="0">4:2:0</option>
+              <option value="1">4:2:2</option>
+              <option value="2">4:4:0</option>
+              <option value="3">4:4:4</option>
+            </Select>
+          </label>
+        }
         <label class={style.optionToggle}>
           Use XYB colorspace
           <Checkbox

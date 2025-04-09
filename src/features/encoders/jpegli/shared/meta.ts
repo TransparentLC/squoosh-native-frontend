@@ -21,6 +21,6 @@ export const mimeType = 'image/jpeg';
 export const extension = 'jpg';
 export const defaultOptions: EncodeOptions = {
   quality: 75,
-  subsample: 3,
-  xyb: true,
+  subsample: 0,
+  xyb: false,
 };
